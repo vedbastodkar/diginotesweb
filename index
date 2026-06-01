@@ -1,0 +1,1488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diginotes — Think in Tabs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ink: #08060f;
+  --void: #0b0812;
+  --grape: #3b0a6b;
+  --violet: #6b21c8;
+  --neon: #a855f7;
+  --ghost: #c084fc;
+  --mist: rgba(168,85,247,0.08);
+  --edge: rgba(168,85,247,0.18);
+  --text: #e2d4f8;
+  --dim: #7c6d96;
+  --mono: 'DM Mono', monospace;
+  --head: 'Syne', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--void);
+  color: var(--text);
+  font-family: var(--head);
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* ── CUSTOM CURSOR ── */
+#cursor {
+  position: fixed;
+  width: 12px; height: 12px;
+  background: var(--neon);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%,-50%);
+  transition: transform 0.08s ease, width 0.2s ease, height 0.2s ease, opacity 0.2s;
+  mix-blend-mode: screen;
+}
+#cursor-ring {
+  position: fixed;
+  width: 36px; height: 36px;
+  border: 1px solid rgba(168,85,247,0.5);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%,-50%);
+  transition: transform 0.18s ease, width 0.25s ease, height 0.25s ease;
+}
+body:hover #cursor { opacity: 1; }
+
+/* ── MESH CANVAS ── */
+#mesh-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ── NOISE OVERLAY ── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* ── WRAPPER ── */
+.site { position: relative; z-index: 2; }
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 48px;
+  background: linear-gradient(to bottom, rgba(8,6,15,0.95) 0%, transparent 100%);
+  backdrop-filter: blur(0px);
+}
+.nav-logo {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 1.1rem; font-weight: 800; letter-spacing: -0.02em;
+  color: #fff;
+}
+.nav-logo .logo-mark {
+  width: 30px; height: 30px;
+  background: linear-gradient(135deg, var(--violet), var(--neon));
+  border-radius: 8px;
+  display: grid; place-items: center;
+  font-size: 0.75rem; font-weight: 700; color: #fff;
+  box-shadow: 0 0 20px rgba(168,85,247,0.4);
+}
+.nav-links {
+  display: flex; gap: 32px; list-style: none;
+  font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase;
+}
+.nav-links a {
+  color: var(--dim); text-decoration: none;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--ghost); }
+.nav-cta {
+  font-family: var(--mono);
+  font-size: 0.72rem; letter-spacing: 0.05em;
+  color: var(--neon); border: 1px solid var(--edge);
+  padding: 9px 20px; border-radius: 6px;
+  text-decoration: none;
+  background: var(--mist);
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.nav-cta:hover {
+  background: rgba(168,85,247,0.15);
+  border-color: rgba(168,85,247,0.5);
+  box-shadow: 0 0 20px rgba(168,85,247,0.2);
+}
+
+/* ── HERO ── */
+.hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  padding: 0 24px;
+  position: relative;
+}
+
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--neon);
+  border: 1px solid var(--edge);
+  padding: 6px 16px; border-radius: 100px;
+  margin-bottom: 40px;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.2s forwards;
+  background: var(--mist);
+}
+
+.hero-title {
+  font-size: clamp(3.2rem, 9vw, 7.5rem);
+  font-weight: 800;
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+  color: #fff;
+  margin-bottom: 28px;
+  opacity: 0;
+  animation: fadeUp 0.9s 0.35s forwards;
+}
+
+.hero-title .accent {
+  background: linear-gradient(135deg, var(--ghost) 0%, var(--neon) 50%, #e879f9 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-sub {
+  font-family: var(--mono);
+  font-size: clamp(0.85rem, 1.5vw, 1.05rem);
+  font-weight: 300;
+  color: var(--dim);
+  max-width: 500px;
+  line-height: 1.7;
+  margin-bottom: 48px;
+  opacity: 0;
+  animation: fadeUp 0.9s 0.5s forwards;
+}
+
+.hero-actions {
+  display: flex; gap: 16px; align-items: center;
+  opacity: 0;
+  animation: fadeUp 0.9s 0.65s forwards;
+}
+
+.btn-primary {
+  font-family: var(--head);
+  font-size: 0.85rem; font-weight: 700; letter-spacing: 0.01em;
+  color: #fff;
+  background: linear-gradient(135deg, var(--violet), var(--neon));
+  padding: 14px 32px; border-radius: 8px;
+  text-decoration: none; border: none; cursor: none;
+  position: relative; overflow: hidden;
+  box-shadow: 0 0 40px rgba(168,85,247,0.35), 0 4px 16px rgba(0,0,0,0.4);
+  transition: box-shadow 0.3s, transform 0.2s;
+}
+.btn-primary::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.btn-primary:hover { 
+  box-shadow: 0 0 60px rgba(168,85,247,0.55), 0 8px 24px rgba(0,0,0,0.5);
+  transform: translateY(-1px);
+}
+.btn-primary:hover::after { opacity: 1; }
+
+.btn-ghost {
+  font-family: var(--mono);
+  font-size: 0.78rem; letter-spacing: 0.04em;
+  color: var(--dim); text-decoration: none;
+  display: flex; align-items: center; gap: 8px;
+  transition: color 0.2s;
+}
+.btn-ghost:hover { color: var(--ghost); }
+.btn-ghost svg { transition: transform 0.2s; }
+.btn-ghost:hover svg { transform: translateX(4px); }
+
+/* ── FLOATING MOCKUP ── */
+.hero-mockup {
+  margin-top: 80px;
+  opacity: 0;
+  animation: fadeUp 1s 0.85s forwards;
+  position: relative;
+}
+.mockup-frame {
+  width: min(860px, 90vw);
+  background: rgba(15,10,28,0.9);
+  border: 1px solid var(--edge);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(168,85,247,0.08),
+              0 40px 120px rgba(0,0,0,0.8),
+              0 0 80px rgba(107,33,200,0.15);
+  position: relative;
+}
+.mockup-frame::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(107,33,200,0.05) 0%, transparent 60%);
+  pointer-events: none; z-index: 1;
+}
+.mockup-topbar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--edge);
+  background: rgba(11,8,18,0.7);
+}
+.mockup-dots { display: flex; gap: 6px; }
+.mockup-dots span {
+  width: 10px; height: 10px; border-radius: 50%;
+}
+.mockup-dots span:nth-child(1) { background: #ff5f57; }
+.mockup-dots span:nth-child(2) { background: #febc2e; }
+.mockup-dots span:nth-child(3) { background: #28c840; }
+
+.tab-bar {
+  display: flex; gap: 4px; padding: 0 16px; flex: 1;
+}
+.tab {
+  font-family: var(--mono);
+  font-size: 0.65rem; letter-spacing: 0.03em;
+  color: var(--dim);
+  padding: 5px 14px; border-radius: 6px 6px 0 0;
+  border: 1px solid transparent;
+  border-bottom: none;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+.tab.active {
+  color: var(--ghost);
+  background: rgba(168,85,247,0.08);
+  border-color: var(--edge);
+}
+.mockup-body {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  height: 320px;
+}
+.mockup-sidebar {
+  border-right: 1px solid var(--edge);
+  padding: 16px 12px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.sidebar-item {
+  font-family: var(--mono);
+  font-size: 0.62rem; letter-spacing: 0.03em;
+  color: var(--dim);
+  padding: 7px 10px; border-radius: 6px;
+  display: flex; align-items: center; gap: 8px;
+  cursor: none;
+  transition: all 0.15s;
+}
+.sidebar-item.active {
+  background: rgba(168,85,247,0.12);
+  color: var(--ghost);
+}
+.sidebar-item:hover { background: rgba(168,85,247,0.07); color: var(--text); }
+.s-icon { font-size: 0.75rem; }
+
+.mockup-content {
+  padding: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  align-content: start;
+}
+.kanban-col { display: flex; flex-direction: column; gap: 8px; }
+.col-header {
+  font-family: var(--mono); font-size: 0.58rem;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--dim); margin-bottom: 4px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.col-count {
+  background: rgba(168,85,247,0.15);
+  color: var(--neon); padding: 1px 6px; border-radius: 10px;
+  font-size: 0.55rem;
+}
+.kanban-card {
+  background: rgba(168,85,247,0.06);
+  border: 1px solid rgba(168,85,247,0.12);
+  border-radius: 8px; padding: 10px 12px;
+  font-family: var(--mono); font-size: 0.6rem;
+  color: var(--text); line-height: 1.5;
+  position: relative; overflow: hidden;
+  transition: border-color 0.2s, transform 0.2s;
+  animation: cardFloat 4s ease-in-out infinite;
+}
+.kanban-card:nth-child(2) { animation-delay: -1.3s; }
+.kanban-card:nth-child(3) { animation-delay: -2.7s; }
+.kanban-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0;
+  width: 3px; height: 100%;
+}
+.card-purple::before { background: #a855f7; }
+.card-blue::before { background: #3b82f6; }
+.card-pink::before { background: #ec4899; }
+.card-green::before { background: #22c55e; }
+.card-tag {
+  font-size: 0.5rem; padding: 2px 6px; border-radius: 4px;
+  margin-top: 6px; display: inline-block;
+  background: rgba(168,85,247,0.15); color: var(--neon);
+}
+
+@keyframes cardFloat {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* ── SECTION BASE ── */
+section {
+  padding: 120px 48px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.section-label {
+  font-family: var(--mono);
+  font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--neon); margin-bottom: 20px;
+  display: flex; align-items: center; gap: 12px;
+}
+.section-label::before {
+  content: '';
+  display: block; width: 24px; height: 1px;
+  background: var(--neon);
+}
+.section-title {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 800; letter-spacing: -0.03em;
+  color: #fff; line-height: 1.05;
+  margin-bottom: 20px;
+}
+.section-sub {
+  font-family: var(--mono);
+  font-size: 0.9rem; font-weight: 300;
+  color: var(--dim); line-height: 1.75;
+  max-width: 480px;
+}
+
+/* ── VIEWS GRID ── */
+.views-section { padding-top: 80px; }
+.views-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  margin-top: 60px;
+  border: 1px solid var(--edge);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.view-card {
+  background: rgba(11,8,18,0.8);
+  padding: 32px 28px;
+  border-right: 1px solid var(--edge);
+  border-bottom: 1px solid var(--edge);
+  position: relative; overflow: hidden;
+  transition: background 0.3s;
+  cursor: none;
+}
+.view-card:nth-child(3n) { border-right: none; }
+.view-card:nth-last-child(-n+3) { border-bottom: none; }
+.view-card::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 20% 80%, rgba(168,85,247,0.08), transparent 60%);
+  opacity: 0; transition: opacity 0.3s;
+}
+.view-card:hover::after { opacity: 1; }
+.view-card:hover { background: rgba(20,12,38,0.9); }
+
+.view-icon {
+  font-size: 1.6rem; margin-bottom: 16px;
+  display: block;
+  filter: drop-shadow(0 0 8px rgba(168,85,247,0.4));
+}
+.view-name {
+  font-size: 1rem; font-weight: 700;
+  color: #fff; margin-bottom: 8px;
+}
+.view-desc {
+  font-family: var(--mono);
+  font-size: 0.7rem; font-weight: 300;
+  color: var(--dim); line-height: 1.65;
+}
+.view-badge {
+  position: absolute; top: 16px; right: 16px;
+  font-family: var(--mono); font-size: 0.55rem;
+  letter-spacing: 0.08em;
+  padding: 3px 8px; border-radius: 4px;
+  background: rgba(168,85,247,0.12);
+  color: var(--neon);
+  border: 1px solid var(--edge);
+}
+
+/* ── TAB SYSTEM ── */
+.tabs-section {
+  padding: 80px 48px 120px;
+  max-width: 1200px; margin: 0 auto;
+}
+.split-demo {
+  margin-top: 60px;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 3px;
+  background: var(--edge);
+  border: 1px solid var(--edge);
+  border-radius: 16px;
+  overflow: hidden;
+  height: 320px;
+  position: relative;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.6);
+}
+.split-pane {
+  background: rgba(11,8,18,0.95);
+  padding: 24px;
+  position: relative;
+}
+.split-pane-title {
+  font-family: var(--mono);
+  font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--neon); margin-bottom: 20px;
+  display: flex; align-items: center; gap: 8px;
+}
+.split-pane-title::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--neon);
+  box-shadow: 0 0 8px var(--neon);
+}
+.divider-handle {
+  position: absolute; left: 50%; top: 0; bottom: 0;
+  width: 3px;
+  background: linear-gradient(to bottom, transparent, var(--neon), transparent);
+  transform: translateX(-50%);
+  z-index: 10;
+  cursor: col-resize;
+}
+.divider-handle::after {
+  content: '⋮⋮';
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  color: var(--neon); font-size: 0.7rem;
+  background: rgba(11,8,18,0.9);
+  padding: 6px 3px; border-radius: 4px;
+  border: 1px solid var(--edge);
+}
+
+/* Mini note inside split */
+.mini-note {
+  background: rgba(168,85,247,0.06);
+  border: 1px solid rgba(168,85,247,0.14);
+  border-radius: 8px; padding: 12px 14px;
+  margin-bottom: 8px;
+}
+.mini-note-title {
+  font-size: 0.68rem; font-weight: 700;
+  color: var(--text); margin-bottom: 4px;
+}
+.mini-note-body {
+  font-family: var(--mono); font-size: 0.58rem;
+  color: var(--dim); line-height: 1.6;
+}
+.mini-progress {
+  height: 3px; background: rgba(168,85,247,0.15);
+  border-radius: 2px; margin-top: 8px; overflow: hidden;
+}
+.mini-progress-fill {
+  height: 100%; border-radius: 2px;
+  background: linear-gradient(90deg, var(--violet), var(--neon));
+  animation: progressPulse 3s ease-in-out infinite;
+}
+@keyframes progressPulse {
+  0%,100% { width: 60%; }
+  50% { width: 72%; }
+}
+
+/* AI pane */
+.ai-message {
+  display: flex; gap: 8px; margin-bottom: 12px;
+  align-items: flex-start;
+}
+.ai-avatar {
+  width: 22px; height: 22px; border-radius: 6px;
+  background: linear-gradient(135deg, var(--violet), var(--neon));
+  flex-shrink: 0; display: grid; place-items: center;
+  font-size: 0.55rem;
+}
+.ai-bubble {
+  font-family: var(--mono); font-size: 0.6rem;
+  color: var(--text); line-height: 1.65;
+  background: rgba(168,85,247,0.07);
+  padding: 8px 12px; border-radius: 0 8px 8px 8px;
+  border: 1px solid var(--edge);
+}
+.ai-cursor {
+  display: inline-block; width: 2px; height: 0.7em;
+  background: var(--neon);
+  animation: blink 1s step-end infinite;
+  margin-left: 2px; vertical-align: text-bottom;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+/* ── FEATURES TICKER ── */
+.ticker-wrap {
+  border-top: 1px solid var(--edge);
+  border-bottom: 1px solid var(--edge);
+  padding: 18px 0;
+  overflow: hidden;
+  position: relative;
+  margin: 0;
+  background: rgba(11,8,18,0.6);
+}
+.ticker-wrap::before, .ticker-wrap::after {
+  content: '';
+  position: absolute; top: 0; bottom: 0; width: 120px;
+  z-index: 2;
+}
+.ticker-wrap::before {
+  left: 0;
+  background: linear-gradient(to right, var(--void), transparent);
+}
+.ticker-wrap::after {
+  right: 0;
+  background: linear-gradient(to left, var(--void), transparent);
+}
+.ticker-track {
+  display: flex; gap: 0;
+  animation: ticker 30s linear infinite;
+  width: max-content;
+}
+.ticker-item {
+  font-family: var(--mono);
+  font-size: 0.72rem; letter-spacing: 0.04em;
+  color: var(--dim);
+  padding: 0 40px;
+  white-space: nowrap;
+  display: flex; align-items: center; gap: 12px;
+}
+.ticker-item::before {
+  content: '';
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--neon);
+  box-shadow: 0 0 6px var(--neon);
+}
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ── FEATURES ── */
+.features-section {
+  padding: 120px 48px;
+  max-width: 1200px; margin: 0 auto;
+}
+.features-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  margin-top: 60px;
+  border: 1px solid var(--edge);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.feature-block {
+  background: rgba(11,8,18,0.8);
+  padding: 40px 36px;
+  border-right: 1px solid var(--edge);
+  border-bottom: 1px solid var(--edge);
+  position: relative; cursor: none;
+  transition: background 0.3s;
+}
+.feature-block:nth-child(2n) { border-right: none; }
+.feature-block:nth-last-child(-n+2) { border-bottom: none; }
+.feature-block:hover { background: rgba(20,12,38,0.9); }
+.feature-num {
+  font-family: var(--mono);
+  font-size: 0.6rem; letter-spacing: 0.15em;
+  color: rgba(168,85,247,0.4); margin-bottom: 20px;
+}
+.feature-title {
+  font-size: 1.15rem; font-weight: 700;
+  color: #fff; margin-bottom: 12px;
+  line-height: 1.2;
+}
+.feature-body {
+  font-family: var(--mono); font-size: 0.72rem;
+  color: var(--dim); line-height: 1.75;
+}
+.feature-tags {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-top: 20px;
+}
+.feature-tag {
+  font-family: var(--mono); font-size: 0.58rem;
+  letter-spacing: 0.05em;
+  padding: 4px 10px; border-radius: 4px;
+  background: rgba(168,85,247,0.08);
+  border: 1px solid rgba(168,85,247,0.18);
+  color: var(--ghost);
+}
+
+/* ── WORKSPACES ── */
+.ws-section {
+  padding: 80px 48px 120px;
+  max-width: 1200px; margin: 0 auto;
+}
+.ws-split {
+  display: grid; grid-template-columns: 1fr 1.2fr;
+  gap: 80px; align-items: center;
+  margin-top: 60px;
+}
+.ws-visual {
+  position: relative;
+}
+.ws-card {
+  background: rgba(15,10,28,0.9);
+  border: 1px solid var(--edge);
+  border-radius: 12px; padding: 24px;
+  position: relative; overflow: hidden;
+}
+.ws-card::before {
+  content: '';
+  position: absolute; top: -40px; right: -40px;
+  width: 120px; height: 120px;
+  background: radial-gradient(circle, rgba(107,33,200,0.3), transparent 70%);
+  pointer-events: none;
+}
+.ws-members {
+  display: flex; gap: -8px; margin-top: 16px;
+}
+.member-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 2px solid var(--void);
+  display: grid; place-items: center;
+  font-size: 0.7rem; font-weight: 700;
+  margin-left: -8px;
+}
+.member-avatar:first-child { margin-left: 0; }
+.ma-1 { background: linear-gradient(135deg, #7c3aed, #a855f7); color: #fff; }
+.ma-2 { background: linear-gradient(135deg, #2563eb, #60a5fa); color: #fff; }
+.ma-3 { background: linear-gradient(135deg, #db2777, #f472b6); color: #fff; }
+.ma-4 { background: linear-gradient(135deg, #059669, #34d399); color: #fff; }
+.ma-more { background: rgba(168,85,247,0.15); color: var(--neon); border-color: var(--edge); font-family: var(--mono); font-size: 0.6rem; }
+
+.ws-activity {
+  margin-top: 20px; display: flex; flex-direction: column; gap: 8px;
+}
+.activity-line {
+  font-family: var(--mono); font-size: 0.62rem;
+  color: var(--dim); display: flex; align-items: center; gap: 10px;
+}
+.activity-line .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--neon); box-shadow: 0 0 6px var(--neon);
+  flex-shrink: 0;
+  animation: pulse 2s ease-in-out infinite;
+}
+.activity-line .dot.dim { background: var(--dim); box-shadow: none; animation: none; }
+@keyframes pulse {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ── INTEGRATIONS ── */
+.int-section {
+  padding: 80px 48px;
+  max-width: 1200px; margin: 0 auto;
+  text-align: center;
+}
+.int-grid {
+  display: flex; justify-content: center;
+  flex-wrap: wrap; gap: 12px;
+  margin-top: 48px;
+}
+.int-pill {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(168,85,247,0.06);
+  border: 1px solid var(--edge);
+  padding: 12px 22px; border-radius: 100px;
+  font-family: var(--mono); font-size: 0.72rem;
+  color: var(--text);
+  transition: border-color 0.2s, background 0.2s, transform 0.2s;
+  cursor: none;
+}
+.int-pill:hover {
+  border-color: rgba(168,85,247,0.4);
+  background: rgba(168,85,247,0.1);
+  transform: translateY(-2px);
+}
+.int-icon { font-size: 1rem; }
+
+/* ── CTA ── */
+.cta-section {
+  padding: 120px 48px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.cta-glow {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  width: 600px; height: 300px;
+  background: radial-gradient(ellipse, rgba(107,33,200,0.2), transparent 70%);
+  pointer-events: none;
+}
+.cta-title {
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-weight: 800; letter-spacing: -0.04em;
+  color: #fff; line-height: 1.0;
+  margin-bottom: 24px;
+  position: relative; z-index: 1;
+}
+.cta-sub {
+  font-family: var(--mono); font-size: 0.85rem;
+  color: var(--dim); margin-bottom: 48px;
+  position: relative; z-index: 1;
+}
+.cta-buttons {
+  display: flex; gap: 16px; justify-content: center; align-items: center;
+  position: relative; z-index: 1;
+}
+.platform-badges {
+  display: flex; gap: 12px; justify-content: center;
+  margin-top: 32px; position: relative; z-index: 1;
+}
+.badge {
+  font-family: var(--mono); font-size: 0.62rem;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--dim);
+  display: flex; align-items: center; gap: 6px;
+}
+.badge::before {
+  content: ''; width: 4px; height: 4px;
+  border-radius: 50%; background: var(--dim);
+}
+.badge:first-child::before { display: none; }
+
+/* ── FOOTER ── */
+footer {
+  border-top: 1px solid var(--edge);
+  padding: 40px 48px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: relative; z-index: 2;
+}
+.footer-left {
+  font-family: var(--mono); font-size: 0.62rem;
+  color: rgba(124,109,150,0.5);
+}
+.footer-right {
+  font-family: var(--mono); font-size: 0.62rem;
+  color: rgba(124,109,150,0.5);
+  display: flex; gap: 24px;
+}
+.footer-right a {
+  color: inherit; text-decoration: none;
+  transition: color 0.2s;
+}
+.footer-right a:hover { color: var(--ghost); }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.reveal {
+  opacity: 0; transform: translateY(30px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.visible {
+  opacity: 1; transform: translateY(0);
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--void); }
+::-webkit-scrollbar-thumb { background: rgba(168,85,247,0.3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(168,85,247,0.5); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  nav { padding: 16px 20px; }
+  .nav-links { display: none; }
+  section, .features-section, .tabs-section, .ws-section, .int-section, .cta-section { padding-left: 20px; padding-right: 20px; }
+  .views-grid { grid-template-columns: 1fr; }
+  .view-card:nth-child(3n) { border-right: 1px solid var(--edge); }
+  .features-grid { grid-template-columns: 1fr; }
+  .feature-block:nth-child(2n) { border-right: 1px solid var(--edge); }
+  .ws-split { grid-template-columns: 1fr; gap: 40px; }
+  .mockup-body { grid-template-columns: 1fr; }
+  .mockup-sidebar { display: none; }
+  .mockup-content { grid-template-columns: 1fr 1fr; }
+  footer { flex-direction: column; gap: 16px; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- Cursor -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- Mesh Canvas -->
+<canvas id="mesh-canvas"></canvas>
+
+<div class="site">
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="logo-mark">DN</div>
+    Diginotes
+  </div>
+  <ul class="nav-links">
+    <li><a href="#views">Views</a></li>
+    <li><a href="#tabs">Tab System</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#workspaces">Workspaces</a></li>
+  </ul>
+  <a id="nav-appstore-btn" href="#" onclick="window.open(APP_STORE_URL,'_blank');return false;" class="nav-cta">Download on App Store ↗</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">Now in development — iPad · iPhone · Mac</div>
+  <h1 class="hero-title">
+    Notes that<br>
+    <span class="accent">think in tabs.</span>
+  </h1>
+  <p class="hero-sub">Open your board in one tab. A note in another. Your AI in a third. Diginotes is a browser for your brain.</p>
+  <div class="hero-actions">
+    <a id="hero-appstore-btn" href="#" onclick="window.open(APP_STORE_URL,'_blank');return false;" class="btn-primary">⬇ Download on App Store</a>
+  </div>
+
+  <div class="hero-mockup">
+    <div class="mockup-frame">
+      <div class="mockup-topbar">
+        <div class="mockup-dots">
+          <span></span><span></span><span></span>
+        </div>
+        <div class="tab-bar">
+          <div class="tab active">📋 Board</div>
+          <div class="tab">✦ Canvas</div>
+          <div class="tab">🤖 AI Chat</div>
+          <div class="tab">+ New Tab</div>
+        </div>
+      </div>
+      <div class="mockup-body">
+        <div class="mockup-sidebar">
+          <div class="sidebar-item active"><span class="s-icon">📋</span> Board</div>
+          <div class="sidebar-item"><span class="s-icon">✦</span> Canvas</div>
+          <div class="sidebar-item"><span class="s-icon">📅</span> Calendar</div>
+          <div class="sidebar-item"><span class="s-icon">☀️</span> Today</div>
+          <div class="sidebar-item"><span class="s-icon">✓</span> Tasks</div>
+          <div class="sidebar-item"><span class="s-icon">🤖</span> AI Chat</div>
+          <div style="height:1px;background:var(--edge);margin:8px 0"></div>
+          <div class="sidebar-item"><span class="s-icon">📘</span> School</div>
+          <div class="sidebar-item"><span class="s-icon">💼</span> Projects</div>
+          <div class="sidebar-item"><span class="s-icon">💡</span> Ideas</div>
+        </div>
+        <div class="mockup-content">
+          <div class="kanban-col">
+            <div class="col-header">Backlog <span class="col-count">3</span></div>
+            <div class="kanban-card card-blue">
+              <div>Research mesh gradients</div>
+              <div class="card-tag">#design</div>
+            </div>
+            <div class="kanban-card card-purple">
+              <div>Canvas LMS import</div>
+              <div class="card-tag">#dev</div>
+            </div>
+          </div>
+          <div class="kanban-col">
+            <div class="col-header">In Progress <span class="col-count">2</span></div>
+            <div class="kanban-card card-pink">
+              <div>Tab snap zones</div>
+              <div class="mini-progress">
+                <div class="mini-progress-fill" style="width:65%"></div>
+              </div>
+              <div class="card-tag">#dev</div>
+            </div>
+            <div class="kanban-card card-purple">
+              <div>AI note summarizer</div>
+              <div class="mini-progress">
+                <div class="mini-progress-fill" style="width:40%"></div>
+              </div>
+            </div>
+          </div>
+          <div class="kanban-col">
+            <div class="col-header">Done <span class="col-count">4</span></div>
+            <div class="kanban-card card-green">
+              <div>Firebase sync ✓</div>
+              <div class="card-tag">#infra</div>
+            </div>
+            <div class="kanban-card card-green">
+              <div>Keychain auth ✓</div>
+              <div class="card-tag">#security</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker-track">
+    <div class="ticker-item">Kanban Board</div>
+    <div class="ticker-item">Infinite Canvas</div>
+    <div class="ticker-item">AI Chat</div>
+    <div class="ticker-item">Tab System</div>
+    <div class="ticker-item">Split Panes</div>
+    <div class="ticker-item">Canvas LMS Import</div>
+    <div class="ticker-item">Firebase Sync</div>
+    <div class="ticker-item">Rich Text</div>
+    <div class="ticker-item">Shared Workspaces</div>
+    <div class="ticker-item">Checklist Notes</div>
+    <div class="ticker-item">Today View</div>
+    <div class="ticker-item">Color Labels</div>
+    <div class="ticker-item">Push Notifications</div>
+    <!-- duplicate for loop -->
+    <div class="ticker-item">Kanban Board</div>
+    <div class="ticker-item">Infinite Canvas</div>
+    <div class="ticker-item">AI Chat</div>
+    <div class="ticker-item">Tab System</div>
+    <div class="ticker-item">Split Panes</div>
+    <div class="ticker-item">Canvas LMS Import</div>
+    <div class="ticker-item">Firebase Sync</div>
+    <div class="ticker-item">Rich Text</div>
+    <div class="ticker-item">Shared Workspaces</div>
+    <div class="ticker-item">Checklist Notes</div>
+    <div class="ticker-item">Today View</div>
+    <div class="ticker-item">Color Labels</div>
+    <div class="ticker-item">Push Notifications</div>
+  </div>
+</div>
+
+<!-- VIEWS -->
+<section id="views" class="views-section reveal">
+  <div class="section-label">Six ways to see your work</div>
+  <h2 class="section-title">Every view.<br>One brain.</h2>
+  <p class="section-sub">Switch between six purpose-built views without losing context. Each opens as its own tab.</p>
+
+  <div class="views-grid">
+    <div class="view-card">
+      <span class="view-icon">📋</span>
+      <div class="view-name">Board</div>
+      <div class="view-desc">Kanban-style columns. Drag notes between stages to track progress on anything.</div>
+    </div>
+    <div class="view-card">
+      <span class="view-icon">✦</span>
+      <div class="view-name">Canvas</div>
+      <div class="view-desc">Free-form infinite surface. Dot grid, paper, cork, bamboo, or walnut backgrounds.</div>
+      <div class="view-badge">Spatial</div>
+    </div>
+    <div class="view-card">
+      <span class="view-icon">📅</span>
+      <div class="view-name">Calendar</div>
+      <div class="view-desc">Every note with a deadline, laid out by date. Deadline-driven work, visualized.</div>
+    </div>
+    <div class="view-card">
+      <span class="view-icon">☀️</span>
+      <div class="view-name">Today</div>
+      <div class="view-desc">Your daily focus list. Starred notes and upcoming deadlines surface here automatically.</div>
+      <div class="view-badge">Smart</div>
+    </div>
+    <div class="view-card">
+      <span class="view-icon">✓</span>
+      <div class="view-name">Tasks</div>
+      <div class="view-desc">Every checklist note in one place. Per-item completion, progress bars, reminder dates.</div>
+    </div>
+    <div class="view-card">
+      <span class="view-icon">🤖</span>
+      <div class="view-name">AI Chat</div>
+      <div class="view-desc">Reads your notes. Creates notes. Sets reminders. Summarizes content. Extracts todos.</div>
+      <div class="view-badge">Powered by AI</div>
+    </div>
+  </div>
+</section>
+
+<!-- TAB SYSTEM -->
+<section id="tabs" class="tabs-section reveal">
+  <div class="section-label">Tab system</div>
+  <h2 class="section-title">A browser<br>for your notes.</h2>
+  <p class="section-sub">Open unlimited tabs. Snap any two side-by-side. Drag the divider to resize. On iPad and Mac.</p>
+
+  <div class="split-demo">
+    <div class="split-pane">
+      <div class="split-pane-title">Board — Projects</div>
+      <div class="mini-note">
+        <div class="mini-note-title">Diginotes — Tab System</div>
+        <div class="mini-note-body">Implement drag-to-snap zones for left/right/quadrant splits. Resize divider. Group pills in tab bar.</div>
+        <div class="mini-progress"><div class="mini-progress-fill"></div></div>
+      </div>
+      <div class="mini-note">
+        <div class="mini-note-title">Canvas LMS Integration</div>
+        <div class="mini-note-body">Import assignments → notes automatically. Deadline sync with Calendar view.</div>
+      </div>
+    </div>
+    <div class="divider-handle"></div>
+    <div class="split-pane">
+      <div class="split-pane-title">AI Chat</div>
+      <div class="ai-message">
+        <div class="ai-avatar">AI</div>
+        <div class="ai-bubble">You have 3 notes due this week. The highest priority is "Tab System" — 65% done. Want me to create a subtask list?<span class="ai-cursor"></span></div>
+      </div>
+      <div class="ai-message" style="flex-direction:row-reverse">
+        <div class="ai-avatar" style="background:rgba(168,85,247,0.2);color:var(--ghost)">V</div>
+        <div class="ai-bubble" style="border-radius:8px 0 8px 8px;background:rgba(168,85,247,0.1)">Yeah, break it into subtasks and add them as a checklist</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" class="features-section reveal">
+  <div class="section-label">Built different</div>
+  <h2 class="section-title">Every detail,<br>considered.</h2>
+
+  <div class="features-grid">
+    <div class="feature-block">
+      <div class="feature-num">01</div>
+      <div class="feature-title">Rich notes, your way</div>
+      <div class="feature-body">Full markdown and rich text editor. Color-code any note. Star to surface in Today. Pin for instant flyout access from anywhere in the app.</div>
+      <div class="feature-tags">
+        <span class="feature-tag">Markdown</span>
+        <span class="feature-tag">Rich text</span>
+        <span class="feature-tag">Color coding</span>
+        <span class="feature-tag">Pinned notes</span>
+      </div>
+    </div>
+    <div class="feature-block">
+      <div class="feature-num">02</div>
+      <div class="feature-title">Checklists with depth</div>
+      <div class="feature-body">Per-item completion and reminder dates. Live progress bar that actually motivates. See all checklist notes aggregated in the Tasks view.</div>
+      <div class="feature-tags">
+        <span class="feature-tag">Per-item reminders</span>
+        <span class="feature-tag">Progress bar</span>
+        <span class="feature-tag">Tasks view</span>
+      </div>
+    </div>
+    <div class="feature-block">
+      <div class="feature-num">03</div>
+      <div class="feature-title">Groups & Labels</div>
+      <div class="feature-body">Color-coded, icon-labeled groups open as their own tabs — like smart folders. Labels cross-cut groups for flexible filtering across your entire library.</div>
+      <div class="feature-tags">
+        <span class="feature-tag">Icon groups</span>
+        <span class="feature-tag">Cross-group labels</span>
+        <span class="feature-tag">Tab per group</span>
+      </div>
+    </div>
+    <div class="feature-block">
+      <div class="feature-num">04</div>
+      <div class="feature-title">Secure by design</div>
+      <div class="feature-body">API keys and auth tokens stored in device Keychain — never in plain storage. Firebase real-time sync. Sign in with Apple or Google.</div>
+      <div class="feature-tags">
+        <span class="feature-tag">Keychain</span>
+        <span class="feature-tag">Firebase sync</span>
+        <span class="feature-tag">Sign in with Apple</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WORKSPACES -->
+<section id="workspaces" class="ws-section reveal">
+  <div class="section-label">Collaboration</div>
+  <h2 class="section-title">Shared workspaces<br>that actually work.</h2>
+  <p class="section-sub">Invite teammates by email or a shareable deep link. See task updates in real time. Admin controls keep things clean.</p>
+
+  <div class="ws-split">
+    <div class="ws-visual">
+      <div class="ws-card">
+        <div class="section-label" style="margin-bottom:12px">🏢 Bread Head — Team</div>
+        <div style="font-family:var(--mono);font-size:0.65rem;color:var(--dim);margin-bottom:16px">4 members · 12 active tasks</div>
+        <div class="ws-members">
+          <div class="member-avatar ma-1">V</div>
+          <div class="member-avatar ma-2">A</div>
+          <div class="member-avatar ma-3">S</div>
+          <div class="member-avatar ma-4">R</div>
+          <div class="member-avatar ma-more">+2</div>
+        </div>
+        <div class="ws-activity">
+          <div class="activity-line"><span class="dot"></span> Aditya marked "Instagram post" complete · just now</div>
+          <div class="activity-line"><span class="dot dim"></span> Sara added "Q3 budget review" · 12m ago</div>
+          <div class="activity-line"><span class="dot dim"></span> Riya commented on "Outreach deck" · 1h ago</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div style="display:flex;flex-direction:column;gap:28px">
+        <div>
+          <div class="feature-title" style="font-size:0.95rem;margin-bottom:8px">Invite by email or link</div>
+          <div class="feature-body">One click deep link. Anyone with the link can join — or keep it invite-only with admin approval.</div>
+        </div>
+        <div>
+          <div class="feature-title" style="font-size:0.95rem;margin-bottom:8px">Shared task board</div>
+          <div class="feature-body">Every member sees the same Kanban. Drag cards, update status, reassign — all in real time via Firebase.</div>
+        </div>
+        <div>
+          <div class="feature-title" style="font-size:0.95rem;margin-bottom:8px">Push on every update</div>
+          <div class="feature-body">Firebase Cloud Messaging fires a push notification the moment a workspace task changes. Nothing slips through.</div>
+        </div>
+        <div>
+          <div class="feature-title" style="font-size:0.95rem;margin-bottom:8px">Admin controls</div>
+          <div class="feature-body">Add and remove members from the workspace settings. Full control over who sees what.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INTEGRATIONS -->
+<section class="int-section reveal">
+  <div class="section-label" style="justify-content:center">Integrations</div>
+  <h2 class="section-title">Plugged in<br>from day one.</h2>
+  <div class="int-grid">
+    <div class="int-pill"><span class="int-icon"> </span> Sign in with Apple</div>
+    <div class="int-pill"><span class="int-icon">G</span> Sign in with Google</div>
+    <div class="int-pill"><span class="int-icon">🎓</span> Canvas LMS</div>
+    <div class="int-pill"><span class="int-icon">🔥</span> Firebase Sync</div>
+    <div class="int-pill"><span class="int-icon">🔔</span> Push Notifications (FCM)</div>
+    <div class="int-pill"><span class="int-icon">🔑</span> Keychain Auth</div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta" class="cta-section">
+  <div class="cta-glow"></div>
+  <h2 class="cta-title">Ready to think<br>in <span class="accent">tabs?</span></h2>
+  <p class="cta-sub">Available now on iPhone, iPad, and Mac.</p>
+  <div class="cta-buttons">
+    <a id="cta-appstore-btn" href="#" onclick="window.open(APP_STORE_URL,'_blank');return false;" class="btn-primary" style="font-size:0.95rem;padding:16px 40px">⬇ Download on App Store</a>
+  </div>
+  <div class="platform-badges">
+    <div class="badge">iPhone</div>
+    <div class="badge">iPad</div>
+    <div class="badge">Mac</div>
+    <div class="badge">Free to start</div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-left">© 2025 Diginotes. Built 3am and beyond.</div>
+  <div class="footer-right">
+    <a href="#" onclick="openLegal('privacy');return false;">Privacy Policy</a>
+    <a href="#" onclick="openLegal('terms');return false;">Terms of Service</a>
+    <a href="#">Contact</a>
+  </div>
+</footer>
+
+</div>
+
+<script>
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   CONFIG — edit this to update the App Store link
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+const APP_STORE_URL = "https://apps.apple.com/app/diginotes/XXXXXXX"; // ← Replace with your App Store link
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* ── CURSOR ── */
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.left = mx + 'px';
+  cursor.style.top = my + 'px';
+});
+
+(function animRing() {
+  rx += (mx - rx) * 0.12;
+  ry += (my - ry) *.12;
+  ring.style.left = rx + 'px';
+  ring.style.top = ry + 'px';
+  requestAnimationFrame(animRing);
+})();
+
+document.querySelectorAll('a, button, .view-card, .feature-block, .int-pill, .kanban-card').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    cursor.style.width = '20px';
+    cursor.style.height = '20px';
+    ring.style.width = '52px';
+    ring.style.height = '52px';
+  });
+  el.addEventListener('mouseleave', () => {
+    cursor.style.width = '12px';
+    cursor.style.height = '12px';
+    ring.style.width = '36px';
+    ring.style.height = '36px';
+  });
+});
+
+/* ── PROXIMITY SPOTLIGHT MESH ── */
+const canvas = document.getElementById('mesh-canvas');
+const ctx = canvas.getContext('2d');
+let W, H;
+const mouse = { x: -9999, y: -9999 };
+
+// Grid config — tight so dots read as texture, not grid
+const CELL = 26;
+const RADIUS = 200;
+const DOT_BASE = 0.55;
+const DOT_MAX = 3.0;
+const BASE_ALPHA = 0.055;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
+
+document.addEventListener('mousemove', e => {
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+});
+
+function hslToRgb(h, s, l) {
+  s /= 100; l /= 100;
+  const k = n => (n + h / 30) % 12;
+  const a = s * Math.min(l, 1 - l);
+  const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+  return [Math.round(f(0) * 255), Math.round(f(8) * 255), Math.round(f(4) * 255)];
+}
+
+function drawSpotlight() {
+  ctx.clearRect(0, 0, W, H);
+
+  const cols = Math.ceil(W / CELL) + 2;
+  const rows = Math.ceil(H / CELL) + 2;
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const x = c * CELL;
+      const y = r * CELL;
+
+      const dx = x - mouse.x;
+      const dy = y - mouse.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist > RADIUS) {
+        ctx.beginPath();
+        ctx.arc(x, y, DOT_BASE, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(168,85,247,${BASE_ALPHA})`;
+        ctx.fill();
+        continue;
+      }
+
+      // Smoothstep proximity: 1 = at cursor, 0 = at radius edge
+      const raw = 1 - dist / RADIUS;
+      const prox = raw * raw * (3 - 2 * raw);
+
+      // Angle from cursor center → hue (color wheel)
+      const angle = Math.atan2(dy, dx);
+      const hue = ((angle / Math.PI) * 180 + 270 + 360) % 360;
+
+      const sat = 55 + prox * 45;
+      const lit = 18 + prox * 62;
+      const [rv, gv, bv] = hslToRgb(hue, sat, lit);
+
+      const dotR = DOT_BASE + prox * (DOT_MAX - DOT_BASE);
+      const alpha = BASE_ALPHA + prox * 0.92;
+
+      // Soft bloom glow around close dots
+      if (prox > 0.25) {
+        const glowStrength = (prox - 0.25) / 0.75;
+        const glowRadius = dotR * 5.5;
+        const glowAlpha = glowStrength * 0.16;
+        const grd = ctx.createRadialGradient(x, y, 0, x, y, glowRadius);
+        grd.addColorStop(0, `rgba(${rv},${gv},${bv},${glowAlpha})`);
+        grd.addColorStop(1, `rgba(${rv},${gv},${bv},0)`);
+        ctx.beginPath();
+        ctx.arc(x, y, glowRadius, 0, Math.PI * 2);
+        ctx.fillStyle = grd;
+        ctx.fill();
+      }
+
+      // Core dot
+      ctx.beginPath();
+      ctx.arc(x, y, dotR, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${rv},${gv},${bv},${alpha})`;
+      ctx.fill();
+    }
+  }
+
+  requestAnimationFrame(drawSpotlight);
+}
+drawSpotlight();
+
+/* ── SCROLL REVEAL ── */
+const reveals = document.querySelectorAll('.reveal');
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      io.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.12 });
+reveals.forEach(el => io.observe(el));
+
+/* ── NAV scroll style ── */
+window.addEventListener('scroll', () => {
+  const nav = document.querySelector('nav');
+  if (window.scrollY > 60) {
+    nav.style.backdropFilter = 'blur(20px)';
+    nav.style.background = 'rgba(8,6,15,0.85)';
+    nav.style.borderBottom = '1px solid rgba(168,85,247,0.1)';
+  } else {
+    nav.style.backdropFilter = 'blur(0px)';
+    nav.style.background = 'linear-gradient(to bottom, rgba(8,6,15,0.95) 0%, transparent 100%)';
+    nav.style.borderBottom = 'none';
+  }
+});
+
+
+/* ── LEGAL MODAL ── */
+function openLegal(tab) {
+  document.getElementById('legal-modal').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  switchLegal(tab || 'privacy');
+}
+function closeLegal() {
+  document.getElementById('legal-modal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+function switchLegal(tab) {
+  const tabs = ['privacy','terms'];
+  tabs.forEach(t => {
+    document.getElementById('legal-' + t).style.display = t === tab ? 'block' : 'none';
+    const btn = document.getElementById('tab-' + t);
+    if (t === tab) {
+      btn.style.background = 'rgba(168,85,247,0.15)';
+      btn.style.color = '#c084fc';
+      btn.style.borderColor = 'rgba(168,85,247,0.3)';
+    } else {
+      btn.style.background = 'transparent';
+      btn.style.color = '#7c6d96';
+      btn.style.borderColor = 'transparent';
+    }
+  });
+  document.getElementById('legal-modal').scrollTop = 0;
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeLegal();
+});
+
+</script>
+
+<!-- ── LEGAL MODAL ── -->
+<div id="legal-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(8,6,15,0.92);backdrop-filter:blur(12px);overflow-y:auto;padding:60px 20px 40px;">
+  <div style="max-width:760px;margin:0 auto;background:rgba(15,10,28,0.98);border:1px solid rgba(168,85,247,0.22);border-radius:16px;padding:48px 52px;position:relative;box-shadow:0 40px 120px rgba(0,0,0,0.8);">
+    <button onclick="closeLegal()" style="position:absolute;top:20px;right:20px;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.25);color:#c084fc;border-radius:6px;padding:6px 14px;font-family:'DM Mono',monospace;font-size:0.7rem;cursor:none;transition:background 0.2s;" onmouseenter="this.style.background='rgba(168,85,247,0.2)'" onmouseleave="this.style.background='rgba(168,85,247,0.1)'">✕ Close</button>
+
+    <!-- Tab switcher -->
+    <div style="display:flex;gap:8px;margin-bottom:40px;">
+      <button id="tab-privacy" onclick="switchLegal('privacy')" style="font-family:'Syne',sans-serif;font-size:0.8rem;font-weight:700;padding:9px 22px;border-radius:8px;border:1px solid rgba(168,85,247,0.3);cursor:none;transition:all 0.2s;background:rgba(168,85,247,0.15);color:#c084fc;">Privacy Policy</button>
+      <button id="tab-terms" onclick="switchLegal('terms')" style="font-family:'Syne',sans-serif;font-size:0.8rem;font-weight:700;padding:9px 22px;border-radius:8px;border:1px solid transparent;cursor:none;transition:all 0.2s;background:transparent;color:#7c6d96;">Terms of Service</button>
+    </div>
+
+    <!-- Privacy Policy -->
+    <div id="legal-privacy">
+      <div style="font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:#a855f7;margin-bottom:8px;">Last updated: June 1, 2026</div>
+      <h2 style="font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:#fff;letter-spacing:-0.03em;margin-bottom:32px;">Privacy Policy</h2>
+
+      <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;margin-bottom:24px;">This Privacy Policy explains how Diginotes ("we", "us", or "our") collects, uses, and protects your information when you use the Diginotes app.</p>
+
+      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#e2d4f8;margin-bottom:12px;margin-top:28px;">Information We Collect</h3>
+      <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;margin-bottom:12px;">When you sign in with Apple or Google, we receive your name and email address. We store this information securely in your Firebase account to identify you and personalize your experience.</p>
+      <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;margin-bottom:24px;">Your notes, checklists, groups, and workspace data are stored in Firebase Firestore under your unique account ID. We do not read or analyze the content of your notes.</p>
+
+      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#e2d4f8;margin-bottom:12px;margin-top:28px;">How We Use Your Information</h3>
+      <ul style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;padding-left:20px;margin-bottom:24px;">
+        <li>Authenticate your identity and maintain your session</li>
+        <li>Store and sync your notes across your devices</li>
+        <li>Send workspace invitations to other users by email</li>
+        <li>Deliver push notifications for workspace task updates</li>
+      </ul>
+
+      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#e2d4f8;margin-bottom:12px;margin-top:28px;">Data Storage</h3>
+      <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;margin-bottom:24px;">Your data is stored in Google Firebase (Firestore and Authentication), subject to Google's privacy practices. Data is encrypted in transit and at rest. Authentication session tokens are stored in your device's secure Keychain, not in plain storage.</p>
+
+      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#e2d4f8;margin-bottom:12px;margin-top:28px;">Third-Party Services</h3>
+      <ul style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;padding-left:20px;margin-bottom:24px;">
+        <li>Firebase (Google): data storage and authentication</li>
+        <li>Google Sign-In: optional sign-in method</li>
+        <li>Apple Sign In: optional sign-in method</li>
+        <li>Canvas LMS: optional integration — only accessed with your explicit authorization</li>
+      </ul>
+
+      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#e2d4f8;margin-bottom:12px;margin-top:28px;">Data Sharing</h3>
+      <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;margin-bottom:24px;">We do not sell, rent, or share your personal information with third parties for advertising or marketing purposes. Your note content is never accessed by us or shared with anyone.</p>
+
+      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#e2d4f8;margin-bottom:12px;margin-top:28px;">Data Deletion</h3>
+      <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;margin-bottom:24px;">You can delete your account and all associated data by contacting us at <a href="mailto:vedbastodkar@gmail.com" style="color:#a855f7;">vedbastodkar@gmail.com</a>. Workspace data shared with other members may be retained until the workspace owner deletes it.</p>
+
+      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#e2d4f8;margin-bottom:12px;margin-top:28px;">Children's Privacy</h3>
+      <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;margin-bottom:24px;">Diginotes is not directed at children under 13. We do not knowingly collect information from children under 13.</p>
+
+      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#e2d4f8;margin-bottom:12px;margin-top:28px;">Contact</h3>
+      <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;">Questions about this Privacy Policy? Email us at <a href="mailto:vedbastodkar@gmail.com" style="color:#a855f7;">vedbastodkar@gmail.com</a>.</p>
+    </div>
+
+    <!-- Terms of Service -->
+    <div id="legal-terms" style="display:none;">
+      <div style="font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:#a855f7;margin-bottom:8px;">Last updated: June 1, 2026</div>
+      <h2 style="font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:#fff;letter-spacing:-0.03em;margin-bottom:32px;">Terms of Service</h2>
+
+      <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;margin-bottom:24px;">By creating an account and using Diginotes you agree to these Terms of Service. Please read them carefully.</p>
+
+      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#e2d4f8;margin-bottom:12px;margin-top:28px;">Your Content</h3>
+      <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;margin-bottom:24px;">You own all notes, checklists, and content you create in Diginotes. By using the app, you grant us a limited license to store and sync your content on your behalf. We will never read, sell, or use your content for any purpose other than delivering the service to you.</p>
+
+      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#e2d4f8;margin-bottom:12px;margin-top:28px;">Acceptable Use</h3>
+      <ul style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;padding-left:20px;margin-bottom:24px;">
+        <li>You must be at least 13 years old to use Diginotes</li>
+        <li>You are responsible for maintaining the security of your account</li>
+        <li>You may not use Diginotes for unlawful purposes</li>
+        <li>You may not attempt to reverse-engineer or compromise the service</li>
+      </ul>
+
+      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#e2d4f8;margin-bottom:12px;margin-top:28px;">Workspaces and Collaboration</h3>
+      <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;margin-bottom:24px;">When you invite others to a workspace, they can read and modify shared content within that workspace. You are responsible for the people you invite. Workspace admins can remove members at any time.</p>
+
+      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#e2d4f8;margin-bottom:12px;margin-top:28px;">Service Availability</h3>
+      <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;margin-bottom:24px;">We aim to provide reliable service but cannot guarantee 100% uptime. We reserve the right to modify, suspend, or discontinue features at any time. We will make reasonable efforts to notify users of significant changes.</p>
+
+      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#e2d4f8;margin-bottom:12px;margin-top:28px;">Disclaimer of Warranties</h3>
+      <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;margin-bottom:24px;">Diginotes is provided "as is" without warranties of any kind. We are not liable for any loss of data, lost profits, or other damages arising from your use of the app.</p>
+
+      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#e2d4f8;margin-bottom:12px;margin-top:28px;">Changes to Terms</h3>
+      <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;margin-bottom:24px;">We may update these terms from time to time. Continued use of the app after changes constitutes acceptance of the new terms. We will display an in-app notice for material changes.</p>
+
+      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#e2d4f8;margin-bottom:12px;margin-top:28px;">Contact</h3>
+      <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;">Questions about these Terms? Email us at <a href="mailto:vedbastodkar@gmail.com" style="color:#a855f7;">vedbastodkar@gmail.com</a>.</p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
