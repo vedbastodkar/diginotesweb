@@ -1188,8 +1188,8 @@ footer {
 <footer>
   <div class="footer-left">© 2025 Diginotes. Built 3am and beyond.</div>
   <div class="footer-right">
-    <a href="#" onclick="openLegal('privacy');return false;">Privacy Policy</a>
-    <a href="#" onclick="openLegal('terms');return false;">Terms of Service</a>
+    <a href="/privacy.html">Privacy Policy</a>
+    <a href="/terms.html">Terms of Service</a>
     <a href="#">Contact</a>
   </div>
 </footer>
@@ -1361,128 +1361,9 @@ window.addEventListener('scroll', () => {
 });
 
 
-/* ── LEGAL MODAL ── */
-function openLegal(tab) {
-  document.getElementById('legal-modal').style.display = 'block';
-  document.body.style.overflow = 'hidden';
-  switchLegal(tab || 'privacy');
-}
-function closeLegal() {
-  document.getElementById('legal-modal').style.display = 'none';
-  document.body.style.overflow = '';
-}
-function switchLegal(tab) {
-  const tabs = ['privacy','terms'];
-  tabs.forEach(t => {
-    document.getElementById('legal-' + t).style.display = t === tab ? 'block' : 'none';
-    const btn = document.getElementById('tab-' + t);
-    if (t === tab) {
-      btn.style.background = 'rgba(168,85,247,0.15)';
-      btn.style.color = '#c084fc';
-      btn.style.borderColor = 'rgba(168,85,247,0.3)';
-    } else {
-      btn.style.background = 'transparent';
-      btn.style.color = '#7c6d96';
-      btn.style.borderColor = 'transparent';
-    }
-  });
-  document.getElementById('legal-modal').scrollTop = 0;
-}
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeLegal();
-});
 
 </script>
 
-<!-- ── LEGAL MODAL ── -->
-<div id="legal-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(8,6,15,0.92);backdrop-filter:blur(12px);overflow-y:auto;padding:60px 20px 40px;">
-  <div style="max-width:760px;margin:0 auto;background:rgba(15,10,28,0.98);border:1px solid rgba(168,85,247,0.22);border-radius:16px;padding:48px 52px;position:relative;box-shadow:0 40px 120px rgba(0,0,0,0.8);">
-    <button onclick="closeLegal()" style="position:absolute;top:20px;right:20px;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.25);color:#c084fc;border-radius:6px;padding:6px 14px;font-family:'DM Mono',monospace;font-size:0.7rem;cursor:none;transition:background 0.2s;" onmouseenter="this.style.background='rgba(168,85,247,0.2)'" onmouseleave="this.style.background='rgba(168,85,247,0.1)'">✕ Close</button>
-
-    <!-- Tab switcher -->
-    <div style="display:flex;gap:8px;margin-bottom:40px;">
-      <button id="tab-privacy" onclick="switchLegal('privacy')" style="font-family:'Syne',sans-serif;font-size:0.8rem;font-weight:700;padding:9px 22px;border-radius:8px;border:1px solid rgba(168,85,247,0.3);cursor:none;transition:all 0.2s;background:rgba(168,85,247,0.15);color:#c084fc;">Privacy Policy</button>
-      <button id="tab-terms" onclick="switchLegal('terms')" style="font-family:'Syne',sans-serif;font-size:0.8rem;font-weight:700;padding:9px 22px;border-radius:8px;border:1px solid transparent;cursor:none;transition:all 0.2s;background:transparent;color:#7c6d96;">Terms of Service</button>
-    </div>
-
-    <!-- Privacy Policy -->
-    <div id="legal-privacy">
-      <div style="font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:#a855f7;margin-bottom:8px;">Last updated: June 1, 2026</div>
-      <h2 style="font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:#fff;letter-spacing:-0.03em;margin-bottom:32px;">Privacy Policy</h2>
-
-      <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;margin-bottom:24px;">This Privacy Policy explains how Diginotes ("we", "us", or "our") collects, uses, and protects your information when you use the Diginotes app.</p>
-
-      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#e2d4f8;margin-bottom:12px;margin-top:28px;">Information We Collect</h3>
-      <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;margin-bottom:12px;">When you sign in with Apple or Google, we receive your name and email address. We store this information securely in your Firebase account to identify you and personalize your experience.</p>
-      <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;margin-bottom:24px;">Your notes, checklists, groups, and workspace data are stored in Firebase Firestore under your unique account ID. We do not read or analyze the content of your notes.</p>
-
-      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#e2d4f8;margin-bottom:12px;margin-top:28px;">How We Use Your Information</h3>
-      <ul style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;padding-left:20px;margin-bottom:24px;">
-        <li>Authenticate your identity and maintain your session</li>
-        <li>Store and sync your notes across your devices</li>
-        <li>Send workspace invitations to other users by email</li>
-        <li>Deliver push notifications for workspace task updates</li>
-      </ul>
-
-      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#e2d4f8;margin-bottom:12px;margin-top:28px;">Data Storage</h3>
-      <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;margin-bottom:24px;">Your data is stored in Google Firebase (Firestore and Authentication), subject to Google's privacy practices. Data is encrypted in transit and at rest. Authentication session tokens are stored in your device's secure Keychain, not in plain storage.</p>
-
-      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#e2d4f8;margin-bottom:12px;margin-top:28px;">Third-Party Services</h3>
-      <ul style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;padding-left:20px;margin-bottom:24px;">
-        <li>Firebase (Google): data storage and authentication</li>
-        <li>Google Sign-In: optional sign-in method</li>
-        <li>Apple Sign In: optional sign-in method</li>
-        <li>Canvas LMS: optional integration — only accessed with your explicit authorization</li>
-      </ul>
-
-      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#e2d4f8;margin-bottom:12px;margin-top:28px;">Data Sharing</h3>
-      <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;margin-bottom:24px;">We do not sell, rent, or share your personal information with third parties for advertising or marketing purposes. Your note content is never accessed by us or shared with anyone.</p>
-
-      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#e2d4f8;margin-bottom:12px;margin-top:28px;">Data Deletion</h3>
-      <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;margin-bottom:24px;">You can delete your account and all associated data by contacting us at <a href="mailto:vedbastodkar@gmail.com" style="color:#a855f7;">vedbastodkar@gmail.com</a>. Workspace data shared with other members may be retained until the workspace owner deletes it.</p>
-
-      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#e2d4f8;margin-bottom:12px;margin-top:28px;">Children's Privacy</h3>
-      <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;margin-bottom:24px;">Diginotes is not directed at children under 13. We do not knowingly collect information from children under 13.</p>
-
-      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#e2d4f8;margin-bottom:12px;margin-top:28px;">Contact</h3>
-      <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;">Questions about this Privacy Policy? Email us at <a href="mailto:vedbastodkar@gmail.com" style="color:#a855f7;">vedbastodkar@gmail.com</a>.</p>
-    </div>
-
-    <!-- Terms of Service -->
-    <div id="legal-terms" style="display:none;">
-      <div style="font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;color:#a855f7;margin-bottom:8px;">Last updated: June 1, 2026</div>
-      <h2 style="font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:#fff;letter-spacing:-0.03em;margin-bottom:32px;">Terms of Service</h2>
-
-      <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;margin-bottom:24px;">By creating an account and using Diginotes you agree to these Terms of Service. Please read them carefully.</p>
-
-      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#e2d4f8;margin-bottom:12px;margin-top:28px;">Your Content</h3>
-      <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;margin-bottom:24px;">You own all notes, checklists, and content you create in Diginotes. By using the app, you grant us a limited license to store and sync your content on your behalf. We will never read, sell, or use your content for any purpose other than delivering the service to you.</p>
-
-      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#e2d4f8;margin-bottom:12px;margin-top:28px;">Acceptable Use</h3>
-      <ul style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;padding-left:20px;margin-bottom:24px;">
-        <li>You must be at least 13 years old to use Diginotes</li>
-        <li>You are responsible for maintaining the security of your account</li>
-        <li>You may not use Diginotes for unlawful purposes</li>
-        <li>You may not attempt to reverse-engineer or compromise the service</li>
-      </ul>
-
-      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#e2d4f8;margin-bottom:12px;margin-top:28px;">Workspaces and Collaboration</h3>
-      <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;margin-bottom:24px;">When you invite others to a workspace, they can read and modify shared content within that workspace. You are responsible for the people you invite. Workspace admins can remove members at any time.</p>
-
-      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#e2d4f8;margin-bottom:12px;margin-top:28px;">Service Availability</h3>
-      <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;margin-bottom:24px;">We aim to provide reliable service but cannot guarantee 100% uptime. We reserve the right to modify, suspend, or discontinue features at any time. We will make reasonable efforts to notify users of significant changes.</p>
-
-      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#e2d4f8;margin-bottom:12px;margin-top:28px;">Disclaimer of Warranties</h3>
-      <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;margin-bottom:24px;">Diginotes is provided "as is" without warranties of any kind. We are not liable for any loss of data, lost profits, or other damages arising from your use of the app.</p>
-
-      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#e2d4f8;margin-bottom:12px;margin-top:28px;">Changes to Terms</h3>
-      <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;margin-bottom:24px;">We may update these terms from time to time. Continued use of the app after changes constitutes acceptance of the new terms. We will display an in-app notice for material changes.</p>
-
-      <h3 style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:#e2d4f8;margin-bottom:12px;margin-top:28px;">Contact</h3>
-      <p style="font-family:'DM Mono',monospace;font-size:0.75rem;color:#b0a0cc;line-height:1.8;">Questions about these Terms? Email us at <a href="mailto:vedbastodkar@gmail.com" style="color:#a855f7;">vedbastodkar@gmail.com</a>.</p>
-    </div>
-  </div>
-</div>
 
 </body>
 </html>

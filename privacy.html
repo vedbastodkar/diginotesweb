@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy — Diginotes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ink: #08060f;
+  --void: #0b0812;
+  --grape: #3b0a6b;
+  --violet: #6b21c8;
+  --neon: #a855f7;
+  --ghost: #c084fc;
+  --mist: rgba(168,85,247,0.08);
+  --edge: rgba(168,85,247,0.18);
+  --text: #e2d4f8;
+  --dim: #7c6d96;
+  --mono: 'DM Mono', monospace;
+  --head: 'Syne', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--void);
+  color: var(--text);
+  font-family: var(--head);
+  overflow-x: hidden;
+  cursor: none;
+}
+
+#cursor {
+  position: fixed;
+  width: 12px; height: 12px;
+  background: var(--neon);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%,-50%);
+  transition: transform 0.08s ease, width 0.2s ease, height 0.2s ease, opacity 0.2s;
+  mix-blend-mode: screen;
+}
+#cursor-ring {
+  position: fixed;
+  width: 36px; height: 36px;
+  border: 1px solid rgba(168,85,247,0.5);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%,-50%);
+  transition: transform 0.18s ease, width 0.25s ease, height 0.25s ease;
+}
+
+#mesh-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.site { position: relative; z-index: 2; }
+
+nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 48px;
+  background: rgba(8,6,15,0.85);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(168,85,247,0.1);
+}
+.nav-logo {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 1.1rem; font-weight: 800; letter-spacing: -0.02em;
+  color: #fff; text-decoration: none;
+}
+.nav-logo .logo-mark {
+  width: 30px; height: 30px;
+  background: linear-gradient(135deg, var(--violet), var(--neon));
+  border-radius: 8px;
+  display: grid; place-items: center;
+  font-size: 0.75rem; font-weight: 700; color: #fff;
+  box-shadow: 0 0 20px rgba(168,85,247,0.4);
+}
+
+.legal-page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 140px 48px 100px;
+}
+
+.legal-eyebrow {
+  font-family: var(--mono);
+  font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--neon); margin-bottom: 8px;
+}
+
+.legal-title {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 800; letter-spacing: -0.03em;
+  color: #fff; margin-bottom: 40px;
+  line-height: 1.05;
+}
+
+.legal-body h3 {
+  font-family: var(--head);
+  font-size: 1rem; font-weight: 700;
+  color: var(--text); margin-bottom: 12px; margin-top: 36px;
+}
+.legal-body p, .legal-body li {
+  font-family: var(--mono);
+  font-size: 0.78rem; color: #b0a0cc; line-height: 1.85;
+}
+.legal-body ul {
+  padding-left: 20px; margin-bottom: 24px;
+}
+.legal-body p { margin-bottom: 24px; }
+.legal-body a { color: var(--neon); text-decoration: none; }
+.legal-body a:hover { color: var(--ghost); }
+
+.page-nav {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 48px;
+}
+.page-nav a {
+  font-family: var(--mono);
+  font-size: 0.7rem; letter-spacing: 0.05em;
+  color: var(--dim); text-decoration: none;
+  padding: 7px 18px; border-radius: 6px;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+.page-nav a.active {
+  background: rgba(168,85,247,0.15);
+  color: var(--ghost);
+  border-color: rgba(168,85,247,0.3);
+}
+.page-nav a:not(.active):hover {
+  color: var(--text);
+  border-color: var(--edge);
+}
+
+footer {
+  border-top: 1px solid var(--edge);
+  padding: 40px 48px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: relative; z-index: 2;
+}
+.footer-left {
+  font-family: var(--mono); font-size: 0.62rem;
+  color: rgba(124,109,150,0.5);
+}
+.footer-right {
+  font-family: var(--mono); font-size: 0.62rem;
+  color: rgba(124,109,150,0.5);
+  display: flex; gap: 24px;
+}
+.footer-right a {
+  color: inherit; text-decoration: none;
+  transition: color 0.2s;
+}
+.footer-right a:hover { color: var(--ghost); }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--void); }
+::-webkit-scrollbar-thumb { background: rgba(168,85,247,0.3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(168,85,247,0.5); }
+
+@media (max-width: 768px) {
+  nav { padding: 16px 20px; }
+  .legal-page { padding: 120px 20px 80px; }
+  footer { flex-direction: column; gap: 16px; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<canvas id="mesh-canvas"></canvas>
+
+<div class="site">
+
+<nav>
+  <a href="/" class="nav-logo">
+    <div class="logo-mark">DN</div>
+    Diginotes
+  </a>
+</nav>
+
+<main class="legal-page">
+  <div class="legal-eyebrow">Last updated: June 1, 2026</div>
+  <h1 class="legal-title">Privacy Policy</h1>
+
+  <nav class="page-nav">
+    <a href="/privacy.html" class="active">Privacy Policy</a>
+    <a href="/terms.html">Terms of Service</a>
+  </nav>
+
+  <div class="legal-body">
+    <p>This Privacy Policy explains how Diginotes ("we", "us", or "our") collects, uses, and protects your information when you use the Diginotes app.</p>
+
+    <h3>Information We Collect</h3>
+    <p>When you sign in with Apple or Google, we receive your name and email address. We store this information securely in your Firebase account to identify you and personalize your experience.</p>
+    <p>Your notes, checklists, groups, and workspace data are stored in Firebase Firestore under your unique account ID. We do not read or analyze the content of your notes.</p>
+
+    <h3>How We Use Your Information</h3>
+    <ul>
+      <li>Authenticate your identity and maintain your session</li>
+      <li>Store and sync your notes across your devices</li>
+      <li>Send workspace invitations to other users by email</li>
+      <li>Deliver push notifications for workspace task updates</li>
+    </ul>
+
+    <h3>Data Storage</h3>
+    <p>Your data is stored in Google Firebase (Firestore and Authentication), subject to Google's privacy practices. Data is encrypted in transit and at rest. Authentication session tokens are stored in your device's secure Keychain, not in plain storage.</p>
+
+    <h3>Third-Party Services</h3>
+    <ul>
+      <li>Firebase (Google): data storage and authentication</li>
+      <li>Google Sign-In: optional sign-in method</li>
+      <li>Apple Sign In: optional sign-in method</li>
+      <li>Canvas LMS: optional integration — only accessed with your explicit authorization</li>
+    </ul>
+
+    <h3>Data Sharing</h3>
+    <p>We do not sell, rent, or share your personal information with third parties for advertising or marketing purposes. Your note content is never accessed by us or shared with anyone.</p>
+
+    <h3>Data Deletion</h3>
+    <p>You can delete your account and all associated data by contacting us at <a href="mailto:vedbastodkar@gmail.com">vedbastodkar@gmail.com</a>. Workspace data shared with other members may be retained until the workspace owner deletes it.</p>
+
+    <h3>Children's Privacy</h3>
+    <p>Diginotes is not directed at children under 13. We do not knowingly collect information from children under 13.</p>
+
+    <h3>Contact</h3>
+    <p>Questions about this Privacy Policy? Email us at <a href="mailto:vedbastodkar@gmail.com">vedbastodkar@gmail.com</a>.</p>
+  </div>
+</main>
+
+<footer>
+  <div class="footer-left">© 2025 Diginotes. Built 3am and beyond.</div>
+  <div class="footer-right">
+    <a href="/privacy.html">Privacy Policy</a>
+    <a href="/terms.html">Terms of Service</a>
+    <a href="#">Contact</a>
+  </div>
+</footer>
+
+</div>
+
+<script>
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.left = mx + 'px';
+  cursor.style.top = my + 'px';
+});
+
+(function animRing() {
+  rx += (mx - rx) * 0.12;
+  ry += (my - ry) * 0.12;
+  ring.style.left = rx + 'px';
+  ring.style.top = ry + 'px';
+  requestAnimationFrame(animRing);
+})();
+
+document.querySelectorAll('a, button').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    cursor.style.width = '20px'; cursor.style.height = '20px';
+    ring.style.width = '52px'; ring.style.height = '52px';
+  });
+  el.addEventListener('mouseleave', () => {
+    cursor.style.width = '12px'; cursor.style.height = '12px';
+    ring.style.width = '36px'; ring.style.height = '36px';
+  });
+});
+
+const canvas = document.getElementById('mesh-canvas');
+const ctx = canvas.getContext('2d');
+let W, H;
+const mouse = { x: -9999, y: -9999 };
+const CELL = 26, RADIUS = 200, DOT_BASE = 0.55, DOT_MAX = 3.0, BASE_ALPHA = 0.055;
+
+function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+window.addEventListener('resize', resize);
+resize();
+document.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+
+function hslToRgb(h, s, l) {
+  s /= 100; l /= 100;
+  const k = n => (n + h / 30) % 12;
+  const a = s * Math.min(l, 1 - l);
+  const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+  return [Math.round(f(0)*255), Math.round(f(8)*255), Math.round(f(4)*255)];
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  const cols = Math.ceil(W / CELL) + 2, rows = Math.ceil(H / CELL) + 2;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const x = c * CELL, y = r * CELL;
+      const dx = x - mouse.x, dy = y - mouse.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist > RADIUS) {
+        ctx.beginPath(); ctx.arc(x, y, DOT_BASE, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(168,85,247,${BASE_ALPHA})`; ctx.fill(); continue;
+      }
+      const raw = 1 - dist / RADIUS, prox = raw*raw*(3 - 2*raw);
+      const hue = ((Math.atan2(dy, dx) / Math.PI)*180 + 270 + 360) % 360;
+      const [rv, gv, bv] = hslToRgb(hue, 55 + prox*45, 18 + prox*62);
+      const dotR = DOT_BASE + prox*(DOT_MAX - DOT_BASE), alpha = BASE_ALPHA + prox*0.92;
+      if (prox > 0.25) {
+        const gs = (prox - 0.25) / 0.75, gr = dotR*5.5, ga = gs*0.16;
+        const grd = ctx.createRadialGradient(x, y, 0, x, y, gr);
+        grd.addColorStop(0, `rgba(${rv},${gv},${bv},${ga})`); grd.addColorStop(1, `rgba(${rv},${gv},${bv},0)`);
+        ctx.beginPath(); ctx.arc(x, y, gr, 0, Math.PI*2); ctx.fillStyle = grd; ctx.fill();
+      }
+      ctx.beginPath(); ctx.arc(x, y, dotR, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(${rv},${gv},${bv},${alpha})`; ctx.fill();
+    }
+  }
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+
+</body>
+</html>
