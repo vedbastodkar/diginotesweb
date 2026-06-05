@@ -84,6 +84,14 @@ nav {
   backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(168,85,247,0.1);
 }
+.nav-back {
+  font-family: var(--mono);
+  font-size: 0.72rem; letter-spacing: 0.04em;
+  color: var(--dim); text-decoration: none;
+  display: flex; align-items: center; gap: 6px;
+  transition: color 0.2s;
+}
+.nav-back:hover { color: var(--ghost); }
 .nav-logo {
   display: flex; align-items: center; gap: 10px;
   font-size: 1.1rem; font-weight: 800; letter-spacing: -0.02em;
@@ -197,6 +205,7 @@ footer {
 <div class="site">
 
 <nav>
+  <a href="../" class="nav-back">← Back</a>
   <a href="../" class="nav-logo">
     <div class="logo-mark">DN</div>
     Diginotes
