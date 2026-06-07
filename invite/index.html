@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>You've been invited to Diginotes</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --ink: #0a0a0a;
+      --ink-secondary: #6b6b6b;
+      --ink-tertiary: #b0b0b0;
+      --surface: #ffffff;
+      --store-bg: #000000;
+      --store-fg: #ffffff;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      background: var(--surface);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100dvh;
+      padding: max(48px, env(safe-area-inset-top)) 32px max(48px, env(safe-area-inset-bottom));
+    }
+
+    .card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      width: 100%;
+      max-width: 320px;
+      opacity: 0;
+      transform: translateY(12px);
+      animation: rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.05s forwards;
+    }
+
+    @keyframes rise {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .icon-wrap {
+      width: 80px;
+      height: 80px;
+      border-radius: 20px;
+      background: var(--ink);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 28px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    }
+
+    .icon-wrap svg {
+      width: 40px;
+      height: 40px;
+      color: #fff;
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+      color: var(--ink);
+      margin-bottom: 12px;
+    }
+
+    .subtitle {
+      font-size: 15px;
+      font-weight: 400;
+      line-height: 1.5;
+      color: var(--ink-secondary);
+      margin-bottom: 40px;
+    }
+
+    .store-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--store-bg);
+      color: var(--store-fg);
+      text-decoration: none;
+      padding: 14px 24px;
+      border-radius: 50px;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.1px;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .store-btn:active {
+      opacity: 0.75;
+      transform: scale(0.97);
+    }
+
+    .store-btn svg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .divider {
+      width: 40px;
+      height: 1px;
+      background: var(--ink-tertiary);
+      margin: 36px 0;
+      opacity: 0.4;
+    }
+
+    .token-note {
+      font-size: 12px;
+      color: var(--ink-tertiary);
+      letter-spacing: 0.2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon-wrap">
+      <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="8" y="6" width="20" height="26" rx="3" stroke="currentColor" stroke-width="2" fill="none"/>
+        <line x1="12" y1="13" x2="24" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <line x1="12" y1="18" x2="24" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <line x1="12" y1="23" x2="20" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="29" cy="29" r="5" fill="currentColor"/>
+        <line x1="29" y1="27" x2="29" y2="31" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="27" y1="29" x2="31" y2="29" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <h1>You've been invited&nbsp;to&nbsp;Diginotes</h1>
+    <p class="subtitle">Open the app to see who invited you and accept.</p>
+
+    <a class="store-btn" href="https://apps.apple.com" id="store-link">
+      <svg viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path d="M14.64 10.55c-.02-2.1 1.72-3.12 1.8-3.17-.98-1.43-2.5-1.63-3.05-1.65-1.3-.13-2.54.76-3.2.76-.66 0-1.68-.74-2.77-.72-1.42.02-2.74.83-3.47 2.1-1.48 2.57-.38 6.37 1.06 8.45.7 1.02 1.54 2.17 2.64 2.13 1.06-.04 1.46-.68 2.74-.68 1.28 0 1.64.68 2.76.66 1.14-.02 1.86-1.04 2.55-2.07.81-1.18 1.14-2.33 1.16-2.39-.03-.01-2.22-.85-2.24-3.37l.02-.01z"/>
+        <path d="M12.56 4.36c.58-.7.97-1.68.86-2.66-.83.03-1.84.55-2.44 1.25-.54.62-1 1.62-.87 2.57.92.07 1.87-.47 2.45-1.16z"/>
+      </svg>
+      Download on the App Store
+    </a>
+
+    <div class="divider"></div>
+    <p class="token-note" id="token-note"></p>
+  </div>
+
+  <script>
+    // Extract token from path: /diginotesweb/invite/TOKEN
+    const segments = window.location.pathname.split('/').filter(Boolean);
+    const inviteIdx = segments.indexOf('invite');
+    const token = inviteIdx !== -1 ? segments[inviteIdx + 1] : null;
+
+    if (token) {
+      document.getElementById('token-note').textContent = 'Invite code: ' + token;
+    }
+  </script>
+</body>
+</html>
